@@ -1,6 +1,8 @@
 # Monitoring Microservices Lab
 
-![Monitoring banner](https://drive.google.com/uc?export=view&id=11isV6SAGw_zbJ2KMxN8hBd9B65hMk4Fk)
+![Monitoring banner](docs/monitoring-banner.svg)
+
+(https://drive.google.com/file/d/11isV6SAGw_zbJ2KMxN8hBd9B65hMk4Fk/view?usp=sharing)
 
 Plataforma de observabilidad para microservicios Spring Boot registrados en Eureka, con recoleccion de metricas en Prometheus y notificaciones de alertas via Alertmanager + Telegram.
 
