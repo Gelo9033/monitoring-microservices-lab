@@ -1,89 +1,136 @@
-# Monitoreo de Microservicios con Prometheus y Alertmanager
+# Monitoring Microservices Lab
 
-Stack de observabilidad para microservicios Spring Boot registrados en Eureka, con alertas enviadas a Telegram mediante Alertmanager.
+![Monitoring banner](https://drive.google.com/uc?export=view&id=11isV6SAGw_zbJ2KMxN8hBd9B65hMk4Fk)
 
-## Descripcion
+Plataforma de observabilidad para microservicios Spring Boot registrados en Eureka, con recoleccion de metricas en Prometheus y notificaciones de alertas via Alertmanager + Telegram.
 
-Este proyecto levanta un entorno de monitoreo con:
+## Contenido
 
-- Prometheus para recoleccion y consulta de metricas.
-- Alertmanager para ruteo y notificacion de alertas.
-- Integracion con Eureka para descubrimiento de servicios por ambiente.
-- Notificaciones a Telegram configuradas por variables de entorno.
+- [Resumen](#resumen)
+- [Stack Tecnologico](#stack-tecnologico)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Requisitos](#requisitos)
+- [Configuracion](#configuracion)
+- [Inicio Rapido](#inicio-rapido)
+- [Operacion](#operacion)
+- [Seguridad](#seguridad)
+- [Checklist para Publicar](#checklist-para-publicar)
 
-## Arquitectura
+## Resumen
 
-- [docker-compose.yml](docker-compose.yml) define los servicios de Prometheus y Alertmanager.
-- [prometheus/prometheus.yml](prometheus/prometheus.yml) contiene la configuracion de jobs y scraping.
-- [prometheus/alertas.yml](prometheus/alertas.yml) contiene reglas de alerta.
-- [alertmanager/config.yml](alertmanager/config.yml) define el receptor Telegram y politica de notificaciones.
-- [data/](data/) es almacenamiento local de series temporales de Prometheus y no debe subirse al repositorio.
+Este laboratorio de monitoreo incluye:
+
+- Descubrimiento de microservicios desde Eureka.
+- Scraping de metricas con Prometheus.
+- Reglas de alerta centralizadas.
+- Envio de alertas a Telegram usando Alertmanager.
+- Configuracion sensible desacoplada mediante variables de entorno.
+
+## Stack Tecnologico
+
+- Prometheus
+- Alertmanager
+- Docker Compose
+- Eureka Service Discovery
+- Telegram Bot API
+
+## Estructura del Proyecto
+
+- [docker-compose.yml](docker-compose.yml): orquestacion de servicios.
+- [prometheus/prometheus.yml](prometheus/prometheus.yml): jobs y scraping de metricas.
+- [prometheus/alertas.yml](prometheus/alertas.yml): reglas de alerta.
+- [alertmanager/config.yml](alertmanager/config.yml): ruteo y mensaje de notificaciones.
+- [data/](data/): almacenamiento local de Prometheus (no versionar).
 
 ## Requisitos
 
 - Docker
 - Docker Compose
-- Red Docker externa creada previamente con nombre network_docker
+- Red Docker externa llamada `network_docker`
 
-Crear la red (si no existe):
+Crear la red (solo una vez):
 
+```bash
 docker network create network_docker
+```
 
 ## Configuracion
 
-1. Copia [ .env.example ](.env.example) a .env
+1. Crea tu archivo `.env` local en la raiz del proyecto.
+2. Define como minimo estas variables:
 
-cp .env.example .env
+```env
+PROMETHEUS_VERSION=latest
+ALERTMANAGER_VERSION=latest
 
-2. Edita tu .env local con valores reales:
+TOKEN_TELEGRAM=REPLACE_WITH_TELEGRAM_BOT_TOKEN
+CHAT_ID_TELEGRAM=REPLACE_WITH_TELEGRAM_CHAT_ID
 
-- TOKEN_TELEGRAM
-- CHAT_ID_TELEGRAM
-- EUREKA_SERVER_dev
-- EUREKA_SERVER_qa
-- EUREKA_SERVER_prod
-- USERNAME_EUREKA_DEV, PASSWORD_EUREKA_DEV
-- USERNAME_EUREKA_QA, PASSWORD_EUREKA_QA
-- USERNAME_EUREKA_PROD, PASSWORD_EUREKA_PROD
+EUREKA_SERVER_dev=http://IP_DEV:8761/eureka
+USERNAME_EUREKA_DEV=REPLACE_WITH_DEV_USER
+PASSWORD_EUREKA_DEV=REPLACE_WITH_DEV_PASSWORD
 
-3. Verifica que no subes secretos:
+EUREKA_SERVER_qa=http://IP_QA:8761/eureka
+USERNAME_EUREKA_QA=REPLACE_WITH_QA_USER
+PASSWORD_EUREKA_QA=REPLACE_WITH_QA_PASSWORD
 
-- [ .gitignore ](.gitignore) ya excluye .env y data.
-- Nunca publiques credenciales reales en archivos versionados.
+EUREKA_SERVER_prod=http://IP_PROD:8761/eureka
+USERNAME_EUREKA_PROD=REPLACE_WITH_PROD_USER
+PASSWORD_EUREKA_PROD=REPLACE_WITH_PROD_PASSWORD
+```
 
-## Levantar el entorno
+3. Verifica que `.env` no este versionado.
 
-Iniciar servicios:
+## Inicio Rapido
 
+Levantar servicios:
+
+```bash
 docker compose up -d
+```
 
-Ver estado:
+Estado de contenedores:
 
+```bash
 docker compose ps
+```
 
-Ver logs de Alertmanager:
+## Operacion
 
+Logs de Alertmanager:
+
+```bash
 docker compose logs --tail=100 alertmanager
+```
 
-Detener servicios:
+Recargar configuracion de Prometheus (hot reload):
 
+```bash
+curl -X POST http://localhost:9090/-/reload
+```
+
+Detener stack:
+
+```bash
 docker compose down
+```
 
-## Seguridad y buenas practicas
+## Seguridad
 
-- .env se usa solo local y no se sube al repositorio.
-- Si un token fue expuesto en cualquier commit, rotalo antes de publicar.
-- La carpeta data contiene informacion operativa de Prometheus y debe mantenerse fuera de Git.
-- [alertmanager/config.yml](alertmanager/config.yml) usa variables de entorno y [docker-compose.yml](docker-compose.yml) habilita expansion con --config.expand-env.
+- Nunca publiques credenciales reales en archivos versionados.
+- `.env` debe permanecer solo en local.
+- La carpeta `data/` debe mantenerse fuera de Git.
+- Alertmanager usa variables de entorno en [alertmanager/config.yml](alertmanager/config.yml) y expansion habilitada por `--config.expand-env` en [docker-compose.yml](docker-compose.yml).
+- Si un secreto se expuso, rotarlo inmediatamente.
 
-## Publicacion en GitHub
+## Checklist para Publicar
 
-Checklist recomendado antes de hacer push:
+Antes de hacer push:
 
-- git ls-files .env no debe mostrar salida.
-- git ls-files | grep ^data/ no debe mostrar salida.
-- git show --name-only --stat no debe incluir .env ni data.
+```bash
+git ls-files .env
+git ls-files | grep '^data/' || true
+git grep -nEi 'token|password|secret|api[_-]?key|bot_token|chat_id|private[_-]?key' -- . ':(exclude).env' || true
+```
 
-## Notas
-
-- El archivo [prometheus/prometheus.yml](prometheus/prometheus.yml) incluye placeholders para endpoints y credenciales de Eureka. Ajusta esos valores segun tu entorno real de despliegue.
+El resultado debe no exponer credenciales reales en archivos versionados.
