@@ -31,6 +31,7 @@ services:
       - ./alertmanager/config.yml:/etc/alertmanager/config.yml:ro
     command:
       - '--config.file=/etc/alertmanager/config.yml'
+      - '--config.expand-env'
       - '--storage.path=/alertmanager'
     restart: unless-stopped
     networks:

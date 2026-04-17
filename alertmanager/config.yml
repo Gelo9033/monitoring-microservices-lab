@@ -15,8 +15,8 @@ receivers:
 - name: 'telegram-bot'
   telegram_configs:
   # Credenciales del bot y destino de Telegram.
-  - bot_token: $[TOKEN_TELEGRAM]
-    chat_id: $[CHAT_ID_TELEGRAM]
+  - bot_token: ${TOKEN_TELEGRAM}
+    chat_id: ${CHAT_ID_TELEGRAM}
     # Envia notificacion cuando una alerta se resuelve.
     send_resolved: true
     # Permite usar etiquetas HTML en el cuerpo del mensaje.
