@@ -1,0 +1,124 @@
+# ========================================================================
+# ARCHIVO DE CONFIGURACIÓN DE PROMETHEUS (INFRAESTRUCTURA COMO CÓDIGO - IaC)
+# Proyecto: Monitoreo de Microservicios con Spring Boot y Eureka
+# ========================================================================
+
+global:
+scrape_interval: 15s
+evaluation_interval: 15s
+
+scrape_configs:
+
+# ══════════════════════════════════════════════════════
+# 1. MICROSERVICIOS (Descubrimiento vía Eureka)
+# ══════════════════════════════════════════════════════
+
+# ─── MICROSERVICIOS: DESARROLLO ───
+- job_name: 'spring-microservices-dev'
+metrics_path: '/actuator/prometheus'
+eureka_sd_configs:
+- server: '[EUREKA_SERVER_dev]'
+refresh_interval: 30s
+# 1. Credenciales para consultar el registro de Eureka (Service Discovery)
+basic_auth:
+username: '[USERNAME_EUREKA_DEV]'
+password: '[PASSWORD_EUREKA_DEV]'
+# 2. Credenciales para raspar las métricas de los microservicios
+basic_auth:
+username: '[USERNAME_EUREKA_DEV]'
+password: '[PASSWORD_EUREKA_DEV]'
+relabel_configs:
+- source_labels: [__meta_eureka_app_name]
+target_label: application
+- target_label: env
+replacement: 'desarrollo'
+- source_labels: [__meta_eureka_app_instance_status]
+regex: UP
+action: keep
+
+# ─── MICROSERVICIOS: PRUEBAS ───
+- job_name: 'spring-microservices-qa'
+metrics_path: '/actuator/prometheus'
+eureka_sd_configs:
+- server: '[EUREKA_SERVER_qa]'
+refresh_interval: 30s
+# 1. Credenciales para consultar el registro de Eureka (Service Discovery)
+basic_auth:
+username: '[USERNAME_EUREKA_QA]'
+password: '[PASSWORD_EUREKA_QA]'
+# 2. Credenciales para raspar las métricas de los microservicios
+basic_auth:
+username: '[USERNAME_EUREKA_QA]'
+password: '[PASSWORD_EUREKA_QA]'
+relabel_configs:
+- source_labels: [__meta_eureka_app_name]
+target_label: application
+- target_label: env
+replacement: 'pruebas'
+- source_labels: [__meta_eureka_app_instance_status]
+regex: UP
+action: keep
+
+# ─── MICROSERVICIOS: PRODUCCIÓN ───
+- job_name: 'spring-microservices-prod'
+metrics_path: '/actuator/prometheus'
+eureka_sd_configs:
+- server: '[EUREKA_SERVER_prod]'
+refresh_interval: 30s
+# 1. Credenciales para consultar el registro de Eureka (Service Discovery)
+basic_auth:
+username: '[USERNAME_EUREKA_PROD]'
+password: '[PASSWORD_EUREKA_PROD]'
+# 2. Credenciales para raspar las métricas de los microservicios
+basic_auth:
+username: '[USERNAME_EUREKA_PROD]'
+password: '[PASSWORD_EUREKA_PROD]'
+relabel_configs:
+- source_labels: [__meta_eureka_app_name]
+target_label: application
+- target_label: env
+replacement: 'produccion'
+- source_labels: [__meta_eureka_app_instance_status]
+regex: UP
+action: keep
+
+
+# ══════════════════════════════════════════════════════
+# 2. EUREKA SERVERS (Métricas propias de los servidores)
+# ══════════════════════════════════════════════════════
+
+# ─── EUREKA SERVER: DESARROLLO ───
+- job_name: 'eureka-server-dev'
+metrics_path: '/actuator/prometheus'
+basic_auth:
+username: '[USERNAME_EUREKA_DEV]'
+password: '[PASSWORD_EUREKA_DEV]'
+static_configs:
+- targets: ['{$IP_DEV}:{$PORT_EUREKA}']
+labels:
+env: 'desarrollo'
+application: 'eureka-server'
+
+# ─── EUREKA SERVER: PRUEBAS ───
+- job_name: 'eureka-server-qa'
+metrics_path: '/actuator/prometheus'
+basic_auth:
+username: '[USERNAME_EUREKA_QA]'
+password: '[PASSWORD_EUREKA_QA]'
+static_configs:
+- targets: ['{$IP_QA}:{$PORT_EUREKA}']
+labels:
+env: 'pruebas'
+application: 'eureka-server'
+
+# ─── EUREKA SERVER: PRODUCCIÓN ───
+- job_name: 'eureka-server-prod'
+metrics_path: '/actuator/prometheus'
+basic_auth:
+username: '[USERNAME_EUREKA_PROD]'
+password: '[PASSWORD_EUREKA_PROD]'
+static_configs:
+- targets: ['{$IP_PROD}:{$PORT_EUREKA}']
+labels:
+env: 'produccion'
+application: 'eureka-server'

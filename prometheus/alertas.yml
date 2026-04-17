@@ -1,0 +1,21 @@
+groups:
+- name: ReglasMaestras
+  rules:
+  - alert: ServicioCaido
+    expr: up == 0
+    for: 10s
+    labels:
+      severity: critica
+      nivel: global
+    annotations:
+      summary: "Servicio {{ $labels.application }} TOTALMENTE CAÍDO"
+      description: "La instancia {{ $labels.instance }} está inaccesible. El contenedor o el túnel SSH fallaron."
+
+  - alert: EndpointFallando
+    expr: increase(http_server_requests_seconds_count{status=~"5.."}[30s]) > 0
+    labels:
+      severity: warning
+      nivel: endpoint
+    annotations:
+      summary: "Error 500 en {{ $labels.application }}"
+      description: "El endpoint específico {{ $labels.uri }} está fallando, pero el microservicio sigue vivo."

@@ -1,0 +1,38 @@
+# Configuracion de enrutamiento principal de Alertmanager.
+route:
+  # Agrupa alertas para evitar mensajes duplicados por cada instancia.
+  group_by: ['alertname', 'application']
+  # Espera inicial antes de enviar la primera alerta de un grupo.
+  group_wait: 10s
+  # Frecuencia minima para reenviar cambios del mismo grupo.
+  group_interval: 1m
+  # Repeticion periodica mientras la alerta siga activa.
+  repeat_interval: 1h
+  receiver: 'telegram-bot' # Debe coincidir con el nombre en receivers
+
+# Definicion de canales de salida (receivers).
+receivers:
+- name: 'telegram-bot'
+  telegram_configs:
+  # Credenciales del bot y destino de Telegram.
+  - bot_token: $[TOKEN_TELEGRAM]
+    chat_id: $[CHAT_ID_TELEGRAM]
+    # Envia notificacion cuando una alerta se resuelve.
+    send_resolved: true
+    # Permite usar etiquetas HTML en el cuerpo del mensaje.
+    parse_mode: 'HTML'
+    # Plantilla Go del mensaje: cambia segun estado y etiquetas.
+    message: |
+      {{ if eq .Status "firing" }}
+        {{ if eq .CommonLabels.nivel "global" }}<b>🚨 CRÍTICO: MICROSERVICIO CAÍDO</b>{{ else }}<b>⚠️ WARNING: FALLO EN ENDPOINT</b>{{ end }}
+      {{ else }}
+        <b>✅ REESTABLECIDO: SISTEMA OPERATIVO</b>
+      {{ end }}
+
+      <b>Proyecto:</b> {{ .CommonLabels.application }}
+      <b>Ambiente:</b> {{ .CommonLabels.environment }}
+      <b>Resumen:</b> {{ .CommonAnnotations.summary }}
+      
+      <i>Detalle:</i> {{ .CommonAnnotations.description }}
+      
+      <b>Fecha:</b> {{ .StartsAt.Format "15:04:05" }}
