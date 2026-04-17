@@ -117,22 +117,4 @@ Detener stack:
 docker compose down
 ```
 
-## Seguridad
 
-- Nunca publiques credenciales reales en archivos versionados.
-- `.env` debe permanecer solo en local.
-- La carpeta `data/` debe mantenerse fuera de Git.
-- Alertmanager usa variables de entorno en [alertmanager/config.yml](alertmanager/config.yml) y expansion habilitada por `--config.expand-env` en [docker-compose.yml](docker-compose.yml).
-- Si un secreto se expuso, rotarlo inmediatamente.
-
-## Checklist para Publicar
-
-Antes de hacer push:
-
-```bash
-git ls-files .env
-git ls-files | grep '^data/' || true
-git grep -nEi 'token|password|secret|api[_-]?key|bot_token|chat_id|private[_-]?key' -- . ':(exclude).env' || true
-```
-
-El resultado debe no exponer credenciales reales en archivos versionados.
